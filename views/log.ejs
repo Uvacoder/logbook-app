@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+  <head>
+
+    <style>
+      html, body, div {
+        margin: 0;
+        padding: 0;
+        font-family: sans-serif;
+      }
+      pre {
+        display: block;
+        width: 100%;
+      }
+      .container {
+        display: block;
+        position: relative;
+        margin: 0.4em;
+        margin-bottom: 0.6em;
+        /*margin-left: 0.4em;*/
+        /*margin-right: 0.4em;*/
+        /*margin-top: 0.4em;*/
+      }
+      .block {
+      }
+      textarea {
+        min-height: 4.8em;
+        box-sizing: border-box;
+
+        display: inline-block;
+        max-width: 100%;
+        width: 100%;
+        min-width: 100%;
+
+        white-space: pre;
+        overflow-wrap: normal;
+        overflow-x: scroll;
+      }
+      .caption {
+      /*   font-weight: bold; */
+        font-size: 0.65em;
+        font-family: sans-serif;
+      }
+      pre {
+        margin-top: 0.2em;
+        margin-bottom: 0.4em;
+      }
+      .controls {
+        font-family: sans-serif;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <form action="/" method="POST" id="logbook_input">
+        <% pages.forEach((page, i) => { %>
+          <% var lineCount = page.content.split("\n").length; %>
+          <div class="block">
+          <div class="caption">
+            <span title="<%= moment(page.createdAt) %>"><%= moment(page.createdAt).format("ddd MMM D Y") %></span>
+            <% if ( moment(page.createdAt).format("ddd MMM D Y") !== moment(page.updatedAt).format("ddd MMM D Y") ) { %>
+            <% /* if (!moment(page.createdAt).isSame(page.updatedAt)) { */ %>
+              <span 
+              title="<%= moment(page.updatedAt) %>"
+              style="color: #888;">updated on <%= moment(page.updatedAt).format("ddd MMM D Y") %></span>
+            <% } %>
+          </div>
+          <pre class="_block"><textarea
+            name="page_<%= page._id %>"
+            style="height:<%= ((lineCount + 1) * 1.2) %>em; line-height: 1.2em;"
+            oninput='this.style.height = "";this.style.height = this.scrollHeight + 3 + "px"'
+            class="_block"><%= page.content %></textarea></pre>
+        </div>
+        <% }); %>
+
+        <div class="block" style="margin-top: 0.4em;">
+          <pre class="_block"><textarea 
+            placeholder="New Log"
+            oninput='this.style.height = "";this.style.height = this.scrollHeight + 3 + "px";'
+            class="_block"
+            name="page_new"></textarea></pre>
+        </div>
+    
+        <div class="controls" style="display:flex; margin-top: 0.4em;">
+          <input type="submit" value="Save (cmd+s)">
+          <input
+                style="flex-grow:1; margin: 0 0.4em;"
+                placeholder="Search" type="search" disabled>
+          <span>
+            <%= user.githubUsername %>
+            <a href="/signout">Log Out</a>
+          </span>
+
+        </div>
+
+      </form>
+    </div>
+
+    <script>
+      (function() {
+        function getData(form) {
+          const inputs = form.querySelectorAll('[name]');
+          const data = {}
+          for (let i = 0; i < inputs.length; i++) {
+            const name = inputs[i].name;
+            const value = inputs[i].value;
+            data[name] = value;
+          }
+          return data;
+        }
+        const keysDown = [];
+        const kMeta = 91;
+        const kS = 83;
+
+        function saveData(data) {
+          return fetch("/", {
+            method: "POST",
+            headers: {'content-type': 'application/json'},
+            body: JSON.stringify(data)
+          })
+        }
+        window.addEventListener('keydown', function(e) {
+          // console.log(e.keyCode)
+          if (keysDown[kMeta] && e.keyCode === kS) {
+            const form = document.getElementById("logbook_input");
+            const data = getData(form);
+            saveData(data)
+              .then(() => {
+                document.location.href = "/"
+              })
+              .catch((err) => console.error(err));
+            e.preventDefault();
+          }
+          keysDown[e.keyCode] = true;
+        })
+        window.addEventListener('keyup', function(e) {
+          // console.log(e.keyCode)
+          keysDown[e.keyCode] = false;
+        })
+      })();
+    </script>
+  </body>
+</html>
