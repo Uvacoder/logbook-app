@@ -1,0 +1,44 @@
+<% var lineCount = page.content.split("\n").length; %>
+<% var numWidth = ("" + (lineCount + 1)).length; %>
+<style>
+  .line_number:target {
+    background-color: bisque;
+  }
+  .line_number {
+    background-color: #f6f6f6;
+  }
+  .line_number_anchor {
+    text-decoration: none;
+    color: #888;
+    display: block;
+    padding-left: 0.6em;
+    padding-right: 0.6em;
+    text-align: right;
+  }
+</style>
+<div style="margin: 0.2em 0; display:flex; box-sizing: content; width: 100%;">
+  <div style="padding-top: 0; overflow-y: scroll">
+    <% for (let i = 0; i < lineCount; i++) { %>
+      <% var linkId = formId + '_' + (i + 1); %>
+      <% var anchor = page._id + "_L" + (i + 1) %>
+      <div>
+        <a
+          id="<%= anchor %>"
+          href="#<%= anchor %>" class="line_number line_number_anchor">
+          <span
+            class="_line_number"
+            style="font-family: monospace; display: block; line-height: 1.23em; margin: 0; padding: 0;">
+            <%= i + 1 %>
+          </span>
+        </a>
+      </div>
+    <% } %>
+  </div>
+  <div style="flex-grow: 1">
+    <textarea
+      name="page_<%= page._id %>"
+      style="height: <%= ((lineCount + 1) * 1.2) %>em; line-height: 1.2em; padding-top: 0;"
+      oninput='this.style.height = "";this.style.height = this.scrollHeight + 3 + "px"'
+      class="_block"><%= page.content %></textarea>
+  </div>
+</div>

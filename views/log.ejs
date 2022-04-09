@@ -89,11 +89,16 @@
                 form="page_delete_<%= page._id %>">
             </span>
           </div>
-          <pre class="_block"><textarea
+          <!-- <pre class="_block"><textarea
             name="page_<%= page._id %>"
             style="height:<%= ((lineCount + 1) * 1.2) %>em; line-height: 1.2em;"
             oninput='this.style.height = "";this.style.height = this.scrollHeight + 3 + "px"'
-            class="_block"><%= page.content %></textarea></pre>
+            class="_block"><%= page.content %></textarea></pre> -->
+          
+          <%- include("_partials/editor", {
+            page: page,
+            formId: "page_input_" + page._id,
+          }) %>
         </div>
         <% }); %>
 
