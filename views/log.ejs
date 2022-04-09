@@ -59,6 +59,14 @@
     </script>
   </head>
   <body>
+    <div style="display: none;">
+      <% pages.forEach((page, i) => { %>
+        <form
+          id="page_delete_<%= page._id %>"
+          method="POST"
+          action="/pages/<%= page._id %>/delete"></form>
+      <% }); %>
+    </div>
     <div class="container">
       <form action="/book/<%= book && book.name %>" method="POST" id="logbook_input">
         <% pages.forEach((page, i) => { %>
@@ -72,6 +80,13 @@
               title="<%= moment(page.updatedAt) %>"
               style="color: #888;">updated on <%= moment(page.updatedAt).format("ddd MMM D Y") %></span>
             <% } %>
+            <span style="position: absolute; right: 0; margin-left: 1em">
+              <input
+                style="font-size: 0.6em; padding-top: 0; padding-bottom: 0; "
+                type="submit"
+                value="Delete"
+                form="page_delete_<%= page._id %>">
+            </span>
           </div>
           <pre class="_block"><textarea
             name="page_<%= page._id %>"

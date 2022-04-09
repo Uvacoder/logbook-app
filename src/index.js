@@ -161,6 +161,22 @@ app.post("/books/:bookId/delete", async (req, res) => {
   res.redirect("/books");
 });
 
+app.post("/pages/:pageId/delete", async (req, res) => {
+  if (!req.user) {
+    return res.redirect("/signin")
+  }
+  const id = req.params["pageId"];
+  const page = await Page.findOneAndDelete({
+    _id: id,
+    user: req.user._id,
+  });
+  if (!page) {
+    return res.redirect("/books");
+  }
+  const book = await Book.findOne({ _id: page.book })
+  res.redirect("/book/" + book.name);
+});
+
 app.get("/books", async (req, res) => {
   if (!req.user) {
     return res.redirect("/signin");
