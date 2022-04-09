@@ -7,6 +7,11 @@ const PageSchema = new mongoose.Schema({
     required: true,
     ref: "user",
   },
+  book: {
+    type: mongoose.Schema.Types.ObjectId,
+    indexed: true,
+    ref: "book",
+  },
   content: {
     type: mongoose.Schema.Types.String,
     required: true,

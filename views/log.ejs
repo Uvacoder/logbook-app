@@ -49,10 +49,18 @@
         font-family: sans-serif;
       }
     </style>
+    <script>
+      (function() {
+        window.appData = {
+          book: <%- JSON.stringify(book) %>,
+          user: <%- JSON.stringify(user) %>,
+        };
+      })();
+    </script>
   </head>
   <body>
     <div class="container">
-      <form action="/" method="POST" id="logbook_input">
+      <form action="/book/<%= book && book.name %>" method="POST" id="logbook_input">
         <% pages.forEach((page, i) => { %>
           <% var lineCount = page.content.split("\n").length; %>
           <div class="block">
@@ -86,6 +94,10 @@
           <input
                 style="flex-grow:1; margin: 0 0.4em;"
                 placeholder="Search" type="search" disabled>
+          <span style="margin: 0 0.4em;">
+            <a href="/books">Books</a>
+          </span>
+
           <span>
             <%= user.githubUsername %>
             <a href="/signout">Log Out</a>
@@ -113,20 +125,20 @@
         const kS = 83;
 
         function saveData(data) {
-          return fetch("/", {
+          const book = window.appData.book.name;
+          return fetch("/book/" + book, {
             method: "POST",
             headers: {'content-type': 'application/json'},
             body: JSON.stringify(data)
           })
         }
         window.addEventListener('keydown', function(e) {
-          // console.log(e.keyCode)
           if (keysDown[kMeta] && e.keyCode === kS) {
             const form = document.getElementById("logbook_input");
             const data = getData(form);
             saveData(data)
               .then(() => {
-                document.location.href = "/"
+                document.location.reload(); //.href = "/book/"
               })
               .catch((err) => console.error(err));
             e.preventDefault();
@@ -134,7 +146,6 @@
           keysDown[e.keyCode] = true;
         })
         window.addEventListener('keyup', function(e) {
-          // console.log(e.keyCode)
           keysDown[e.keyCode] = false;
         })
       })();

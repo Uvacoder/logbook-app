@@ -6,6 +6,7 @@ const mongoose = require("mongoose");
 const moment = require("moment");
 const passport = require("./auth").passport;
 const MongoStore = require("connect-mongo");
+const Book = require("./models/Book");
 
 mongoose.connect(process.env.MONGODB_URI, {
   useNewUrlParser: true,
@@ -57,10 +58,10 @@ app.post("/", async (req, res) => {
 
   const pageNew = req.body["page_new"];
   if (pageNew !== undefined && pageNew !== null && pageNew !== "") {
-    const page = await Page.create({
+    await Page.create({
       user: req.user._id,
       content: pageNew,
-    })
+    });
   }
 
   const keys = Object.keys(req.body)
@@ -77,8 +78,114 @@ app.post("/", async (req, res) => {
       }
     }
   }
-  console.log(req.body)
-  res.redirect("/")
+
+  res.redirect("/");
+});
+
+app.post("/book/:book", async (req, res) => {
+  if (!req.user) {
+    return res.redirect("/signin");
+  }
+
+  const book = await Book.findOne({ name: req.params["book"] });
+  if (!book) {
+    return res.redirect("/");
+  }
+
+  const pageNew = req.body["page_new"];
+  if (pageNew !== undefined && pageNew !== null && pageNew !== "") {
+    await Page.create({
+      user: req.user._id,
+      book: book._id,
+      content: pageNew,
+    })
+  }
+
+  const keys = Object.keys(req.body)
+  const pageKeys = keys.filter((key) => key.startsWith("page_") && key !== "page_new")
+  await Promise.all(pageKeys.map(async (pageKey) => {
+    const id = pageKey.split("_")[1];
+    if (id) {
+      const page = await Page.findOne({ _id: id, user: req.user._id })
+      const currContent = req.body[pageKey];
+      if (page.content !== currContent) {
+        page.content = currContent;
+        await page.save();
+      }
+    }
+  }));
+
+  console.log("redirecting", book.name)
+  res.redirect("/book/" + book.name);
+});
+
+app.get("/book/:book", async (req, res) => {
+  if (!req.user) {
+    return res.redirect("/signin");
+  }
+
+  const book = await Book.findOne({
+    name: req.params["book"],
+    user: req.user._id,
+  });
+  if (!book) {
+    return res.redirect("/");
+  }
+
+  const pages = await Page.find({
+    user: req.user._id,
+    book: book._id,
+  }).sort({ _id: 1 });
+
+  res.render("log.ejs", {
+    pages,
+    moment,
+    user: req.user,
+    book,
+  });
+});
+
+app.post("/books/:bookId/delete", async (req, res) => {
+  if (!req.user) {
+    return res.redirect("/signin")
+  }
+  const id = req.params["bookId"];
+  const book = await Book.findOneAndDelete({
+    _id: id,
+    user: req.user._id,
+  });
+  if (!book) {
+    return res.redirect("/books");
+  }
+  await Page.deleteMany({ book: id })
+  res.redirect("/books");
+});
+
+app.get("/books", async (req, res) => {
+  if (!req.user) {
+    return res.redirect("/signin");
+  }
+
+  const books = await Book.find({ user: req.user._id }).sort({ name: 1 });
+
+  res.render("books.ejs", {
+    moment,
+    user: req.user,
+    books,
+  });
+});
+
+app.post("/books/new", async (req, res) => {
+  if (!req.user) {
+    return res.redirect("/signin");
+  }
+
+  const book = await Book.create({
+    name: req.body.name,
+    user: req.user._id,
+  });
+
+  res.redirect("/book/" + book.name);
 });
 
 app.get("/", async (req, res) => {
@@ -86,13 +193,7 @@ app.get("/", async (req, res) => {
     return res.redirect("/signin");
   }
 
-  const pages = await Page.find({ user: req.user._id }).sort({ _id: 1 });
-
-  res.render("log.ejs", {
-    pages,
-    moment,
-    user: req.user,
-  })
+  res.redirect("/books");
 });
 
 const listener = app.listen(process.env.PORT || 3000, () => {

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+  <head>
+
+    <style>
+      html, body, div {
+        margin: 0;
+        padding: 0;
+        font-family: sans-serif;
+      }
+      pre {
+        display: block;
+        width: 100%;
+      }
+      .container {
+        display: block;
+        position: relative;
+        margin: 0.4em;
+        margin-bottom: 0.6em;
+        /*margin-left: 0.4em;*/
+        /*margin-right: 0.4em;*/
+        /*margin-top: 0.4em;*/
+      }
+      .block {
+      }
+      textarea {
+        min-height: 4.8em;
+        box-sizing: border-box;
+
+        display: inline-block;
+        max-width: 100%;
+        width: 100%;
+        min-width: 100%;
+
+        white-space: pre;
+        overflow-wrap: normal;
+        overflow-x: scroll;
+      }
+      .caption {
+      /*   font-weight: bold; */
+        font-size: 0.65em;
+        font-family: sans-serif;
+      }
+      pre {
+        margin-top: 0.2em;
+        margin-bottom: 0.4em;
+      }
+      .controls {
+        font-family: sans-serif;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+
+      <div>
+        <span>
+          <%= user.githubUsername %>
+          <a href="/signout">Log Out</a>
+        </span>
+      </div>
+
+      <div style="margin: 1em 0;">
+        <div>Books</div>
+        <ul>
+          <% books.forEach((book) => { %>
+            <li style="margin: 1em 0;">
+              <a href="/book/<%= book.name %>"><%= book.name %></a>
+              <form
+                style="margin-left: 0.6em; display: inline-block"
+                action="/books/<%= book._id %>/delete" method="POST">
+                <input type="submit" value="Delete">
+              </form>
+            </li>
+          <% }) %>
+        </ul>
+      </div>
+
+      <form action="/books/new" method="POST"
+        style="padding: 0.5em; background-color: palegoldenrod; display: inline-block;">
+        <div style="margin: 0.4em 0;">
+          <label style="_font-size: 0.8em" for="input-name">New Book</label>
+        </div>
+        <input
+          style="min-width: 20em"
+          id="input-name" type="text" name="name" placeholder="Book Name">
+        <div style="margin: 0.4em 0;">
+          <input type="submit" value="Create Book">
+        </div>
+      </form>
+    </div>
+  </body>
+</html>
